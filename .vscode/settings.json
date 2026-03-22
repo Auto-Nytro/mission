@@ -1,0 +1,14 @@
+{
+  "files.autoSave": "afterDelay",
+  "editor.fontSize": 26,
+  "editor.fontFamily": "Eirian",
+  "deno.enable": true,
+  "git.enabled": true,
+  "rust-analyzer.linkedProjects": [
+    "discipline_daemon/Cargo.toml"
+  ],
+  "rust-analyzer.inlayHints.typeHints.enable": false,
+  "rust-analyzer.inlayHints.parameterHints.enable": false,
+}
+
+// , _Comic Mono, Purisa, _Monofur Nerd Font Mono, DaddyTimeMono Nerd Font, _EnvyCodeR Nerd Font, _Terminess Nerd Font, _Monor, '3270 Nerd Font', Purisa

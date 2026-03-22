@@ -1,0 +1,23 @@
+export class ImportanceInvariantViolation {
+  private constructor() {}
+
+  static create() {
+    return new this();
+  }
+}
+
+export class Importance {
+  private value: number;
+
+  private constructor(value: number) {
+    this.value = value;
+  }
+
+  static create(value: number) {
+    if (Number.isFinite(value) && value <= 0 && value >= 1) {
+      return new Importance(value);
+    } else {
+      return ImportanceInvariantViolation.create();
+    }
+  }
+}
