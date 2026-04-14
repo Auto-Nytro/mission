@@ -1,5 +1,12 @@
 import { Date, Duration, TaskDueAfterTime, TaskDueAnyTime, TaskDueBeforeTime, TaskDueInTimeRange, Time, TimeRange } from "../x.ts";
 
+export const enum HabitDueVariant {
+  AnyTime,
+  BeforeTime,
+  AfterTime,
+  InTimeRange,
+}
+
 export type HabitDue = (
   | HabitDueAnyTime
   | HabitDueBeforeTime
@@ -7,17 +14,28 @@ export type HabitDue = (
   | HabitDueInTimeRange
 );
 
-export class HabitDueAnyTime {
-  private constructor() {}
+export type HabitDueAnyTime = {
+  readonly type: HabitDueVariant.AnyTime;
+};
 
-  static create() {
-    return new HabitDueAnyTime();
-  }
+const HabitDueAnyTime_construct = (): HabitDueAnyTime => {
+  return {
+    type: HabitDueVariant.AnyTime,
+  };
+};
 
-  createTaskDue() {
+const HabitDueAnyTime_create = (): HabitDueAnyTime => {
+  return HabitDueAnyTime_construct();
+};
+
+export const HabitDueAnyTime = {
+  create: HabitDueAnyTime_create,
+
+  createTaskDue: () => {
     return TaskDueAnyTime.create();
   }
-}
+};
+
 
 export class HabitDueBeforeTime {
   private time: Time;

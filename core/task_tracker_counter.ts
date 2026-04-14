@@ -1,90 +1,114 @@
-import { DateTime, Difficulty, Span } from "../x.ts";
+import { DateTime, Difficulty, Failure, Nullable, Span, Success, Tried } from "../x.ts";
 
-export class CompletionTimeInvariantViolation {
-  static create() {
-    return new CompletionTimeInvariantViolation();
-  }
+export const enum CreateTaskTrackerCounterErrorVariant {
+  CompletedAtViolation,
 }
 
-export class TaskTrackerCounter {
-  private span: Span;
-  private difficulty: Difficulty;
-  private workload: number;
-  private workdone: number;
-  private completionTime: DateTime | null;
+export type CreateTaskTrackerCounterError = {
+  readonly variant: CreateTaskTrackerCounterErrorVariant.CompletedAtViolation, 
+};
 
-  private constructor(
-    span: Span,
-    difficulty: Difficulty,
-    workload: number,
-    workdone: number,
-    completionTime: DateTime | null,
-  ) {
-    this.span = span;
-    this.difficulty = difficulty;
-    this.workload = workload;
-    this.workdone = workdone;
-    this.completionTime = completionTime;
-  }
+export const CreateTaskTrackerCounterError = {
+  CompletedAtViolation: (): CreateTaskTrackerCounterError => {
+    return {
+      variant: CreateTaskTrackerCounterErrorVariant.CompletedAtViolation,
+    };
+  },
+};
 
-  static create(
-    span: Span,
-    difficulty: Difficulty,
-    workload: number,
-  ) {
-    return new TaskTrackerCounter(
-      span, 
-      difficulty,
-      workload,
-      0,
-      null,
-    );
-  }
-
-  static construct(
-    span: Span,
-    difficulty: Difficulty,
-    workload: number,
-    workdone: number,
-    completionTime: DateTime | null,
-  ) {
-    if (
-      workdone === workload
-      &&
-      completionTime === null
-    ) {
-      return CompletionTimeInvariantViolation.create();
-    }
-
-    return new TaskTrackerCounter(
-      span,
-      difficulty,
-      workload,
-      workdone,
-      completionTime,
-    );
-  }
-
-  do(time: DateTime) {
-    if (this.workload >= this.workdone) {
-      return;
-    }
-    
-    this.workload += 1;
-
-    if (this.workload >= this.workdone) {
-      this.completionTime = time;
-    }
-  }
-
-  undo() {
-    if (this.workdone > 0) {
-      this.workdone -= 1;
-      this.completionTime = null;
-    }
-  }
-
-  isComplete() {
-    return this.completionTime !== null;
-  }
+export interface TaskTrackerCounter {
+  span: Span;
+  difficulty: Difficulty;
+  workload: number;
+  workdone: number;
+  completedAt: Nullable<DateTime>;
 }
+
+export interface TaskTrackerCounterComplete extends TaskTrackerCounter {
+  completedAt: DateTime;
+}
+
+const construct = (
+  span: Span,
+  difficulty: Difficulty,
+  workload: number,
+  workdone: number,
+  completedAt: Nullable<DateTime>,
+): TaskTrackerCounter => {
+  return {
+    span,
+    difficulty,
+    workload,
+    workdone,
+    completedAt,
+  };
+};
+
+const reconstruct = (
+  span: Span,
+  difficulty: Difficulty,
+  workload: number,
+  workdone: number,
+  completedAt: Nullable<DateTime>,
+): Tried<TaskTrackerCounter, CreateTaskTrackerCounterError> => {
+  if (
+    workdone === workload
+    &&
+    completedAt === null
+  ) {
+    return Failure(CreateTaskTrackerCounterError.CompletedAtViolation());
+  }
+
+  return Success({
+    span,
+    difficulty,
+    workload,
+    workdone,
+    completedAt,
+  });
+};
+
+const create = (
+  span: Span,
+  difficulty: Difficulty,
+  workload: number,
+): TaskTrackerCounter => {
+  return construct(
+    span,
+    difficulty,
+    workload,
+    0,
+    null,
+  );
+};
+
+const doOrNoop = (it: TaskTrackerCounter, time: DateTime): void => {
+  if (it.workdone >= it.workload) {
+    return;
+  }
+  
+  it.workdone += 1;
+
+  if (it.workdone >= it.workload) {
+    it.completedAt = time;
+  }
+};
+
+const undoOrNoop = (it: TaskTrackerCounter): void => {
+  if (it.workdone > 0) {
+    it.workdone -= 1;
+    it.completedAt = null;
+  }
+};
+
+const isComplete = (it: TaskTrackerCounter): it is TaskTrackerCounterComplete => {
+  return it.completedAt !== null;
+};
+
+export const TaskTrackerCounter = {
+  reconstruct,
+  create,
+  doOrNoop,
+  undoOrNoop,
+  isComplete,
+};

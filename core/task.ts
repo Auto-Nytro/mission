@@ -1,5 +1,4 @@
-import { TaskDue, TaskTracker, DateTime, TaskDueBeforeTime } from "../x.ts";
-import { TaskDueTag } from "./task_due.ts";
+import { TaskDue, TaskTracker } from "../x.ts";
 
 export const enum TaskStatus {
   Pending,
@@ -8,48 +7,55 @@ export const enum TaskStatus {
   Overdue,
 }
 
-export class Task {
-  private due: TaskDue;
-  private tracker: TaskTracker;
+export type Task = {
+  due: TaskDue,
+  tracker: TaskTracker,
+};
 
-  private constructor(
-    due: TaskDue,
-    tracker: TaskTracker,
-  ) {
-    this.due = due;
-    this.tracker = tracker;
-  }
+const construct = (
+  due: TaskDue,
+  tracker: TaskTracker,
+): Task => {
+  return {
+    due,
+    tracker,
+  };
+};
 
-  static create(
-    due: TaskDue,
-    tracker: TaskTracker,
-  ) {
-    return new Task(due, tracker);
-  }
+const reconstruct = construct;
+const create = construct;
 
-  calculateStatus(now: DateTime) {
-    switch (this.due.tag) {
-      case TaskDueTag.DueAnyTime: {
-        if (this.tracker.isComplete()) {
-          return TaskStatus.Complete;
-        } 
-        return TaskStatus.Due;
-      }
-      case TaskDueTag.DueBeforeTime: {
-        if (now.isEarilerThan(this.due.getTime())) {
-          if (this.tracker.isComplete()) {
-            return TaskStatus.Complete;
-          }
-          return TaskStatus.Overdue;
-        }
-        if ()
-      }
-      case TaskDueTag.DueAfterTime: {
 
-      }
-      case TaskDueTag.DueInTimeRange: {
 
-      }
-    }
-  }
-}
+// calculateStatus(now: DateTime) {
+//   switch (this.due.tag) {
+//     case TaskDueVariant.DueAnyTime: {
+//       if (this.tracker.isComplete()) {
+//         return TaskStatus.Complete;
+//       } 
+//       return TaskStatus.Due;
+//     }
+//     case TaskDueVariant.DueBeforeTime: {
+//       if (now.isEarilerThan(this.due.getTime())) {
+//         if (this.tracker.isComplete()) {
+//           return TaskStatus.Complete;
+//         }
+//         return TaskStatus.Overdue;
+//       }
+//       if ()
+//     }
+//     case TaskDueVariant.DueAfterTime: {
+
+//     }
+//     case TaskDueVariant.DueInTimeRange: {
+
+//     }
+//   }
+// }
+// }
+
+
+export const Task = {
+  reconstruct,
+  create,
+};

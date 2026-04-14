@@ -1,30 +1,44 @@
-export class HabitDescriptionInvariantViolation extends Error {
-  private constructor(private readonly vale: string) {
-    super();
-  }
+import { Failure, Success, Tried, Unique } from "../x.ts";
 
-  static create(value: string) {
-    return new HabitDescriptionInvariantViolation(value);
-  }
+export const enum CreateHabitDescriptionErrorType {
+  LengthViolation,
 }
 
-export class HabitDescription {
-  private value: string;
-
-  private constructor(value: string) {
-    this.value = value;
-  }
-
-  static readonly MAXIMUM_LENGTH = 10000;
-  static readonly MINIMUM_LENGTH = 1;
-
-  static create(value: string) {
-    if (value.length < this.MINIMUM_LENGTH) {
-      return HabitDescriptionInvariantViolation.create(value);
-    }
-    if (value.length > this.MAXIMUM_LENGTH) {
-      return HabitDescriptionInvariantViolation.create(value);
-    }
-    return new HabitDescription(value);
-  }
+export type CreateHabitDescriptionError = {
+  readonly type: CreateHabitDescriptionErrorType.LengthViolation,
+  readonly value: string,
 }
+
+export const CreateHabitDescriptionError = {
+  LengthViolation: (value: string): CreateHabitDescriptionError => {
+    return {
+      type: CreateHabitDescriptionErrorType.LengthViolation,
+      value,
+    };
+  },
+};
+
+const BRAND = Symbol();
+
+export type HabitDescription = Unique<typeof BRAND, "HabitDescription", string>;
+
+const MAXIMUM_LENGTH = 10000;
+const MINIMUM_LENGTH = 1;
+
+const construct = (value: string): HabitDescription => {
+  return value as HabitDescription;
+};
+
+const create = (value: string): Tried<HabitDescription, CreateHabitDescriptionError> => {
+  if (value.length < MINIMUM_LENGTH) {
+    return Failure(CreateHabitDescriptionError.LengthViolation(value));
+  }
+  if (value.length > MAXIMUM_LENGTH) {
+    return Failure(CreateHabitDescriptionError.LengthViolation(value));
+  }
+  return Success(construct(value));
+};
+
+export const HabitDescription = {
+  create,
+};

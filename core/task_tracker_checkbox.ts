@@ -1,54 +1,56 @@
-import { DateTime, Difficulty, Span } from "../x.ts";
+import { DateTime, Difficulty, Nullable, Span } from "../x.ts";
 
-export class TaskTrackerCheckbox {
-  private span: Span;
-  private difficulty: Difficulty;
-  private completionTime: DateTime | null;
+export interface TaskTrackerCheckbox {
+  span: Span,
+  difficulty: Difficulty,
+  completedAt: Nullable<DateTime>,
+};
 
-  private constructor(
-    span: Span,
-    difficulty: Difficulty,
-    completionTime: DateTime | null,
-  ) {
-    this.span = span;
-    this.difficulty = difficulty;
-    this.completionTime = completionTime;
-  }
+export interface TaskTrackerCheckboxComplete extends TaskTrackerCheckbox {
+  completedAt: DateTime,
+};
 
-  static create(
-    span: Span,
-    difficulty: Difficulty,
-  ): TaskTrackerCheckbox {
-    return new TaskTrackerCheckbox(
-      span,
-      difficulty,
-      null,
-    );
-  }
+const construct = (
+  span: Span,
+  difficulty: Difficulty,
+  completedAt: DateTime | null,
+): TaskTrackerCheckbox => {
+  return {
+    span,
+    difficulty,
+    completedAt,
+  };
+};
 
-  static construct(
-    span: Span,
-    difficulty: Difficulty,
-    completionTime: DateTime | null,
-  ) {
-    return new TaskTrackerCheckbox(
-      span,
-      difficulty,
-      completionTime,
-    );
-  }
+const create = (
+  span: Span,
+  difficulty: Difficulty,
+): TaskTrackerCheckbox => {
+  return construct(
+    span,
+    difficulty,
+    null,
+  );
+};
 
-  isComplete() {
-    return this.completionTime !== null;
-  }
-  
-  do(time: DateTime) {
-    if (this.completionTime === null) {
-      this.completionTime = time;
-    }
-  }
+const isComplete = (it: TaskTrackerCheckbox): it is TaskTrackerCheckboxComplete => {
+  return it.completedAt !== null;
+};
 
-  undo() {
-    this.completionTime = null;
+const doOrNoop = (it: TaskTrackerCheckbox, time: DateTime) => {
+  if (it.completedAt === null) {
+    it.completedAt = time;
   }
-}
+};
+
+const undoOrNoop = (it: TaskTrackerCheckbox) => {
+  it.completedAt = null;
+};
+
+export const TaskTrackerCheckbox = {
+  construct,
+  create,
+  isComplete,
+  doOrNoop,
+  undoOrNoop,
+};

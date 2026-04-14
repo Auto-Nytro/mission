@@ -1,7 +1,8 @@
 {
   "files.autoSave": "afterDelay",
   "editor.fontSize": 26,
-  "editor.fontFamily": "Eirian",
+  "editor.fontFamily": "Purisa",
+  // "editor.letterSpacing": 1.5,
   "deno.enable": true,
   "git.enabled": true,
   "rust-analyzer.linkedProjects": [

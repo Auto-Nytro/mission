@@ -1,45 +1,45 @@
-export class Weekday {
-  private value: number;
+import { Unique } from "../x.ts";
 
-  private constructor(value: number) {
-    this.value = value;
-  }
+const BRAND = Symbol();
 
-  private static SUN_NUMBER = 0;
-  private static MON_NUMBER = 1;
-  private static TUE_NUMBER = 2;
-  private static WED_NUMBER = 3;
-  private static THU_NUMBER = 4;
-  private static FRI_NUMBER = 5;
-  private static SAT_NUMBER = 6;
-  
-  private static SUN = new Weekday(Weekday.SUN_NUMBER);
-  private static MON = new Weekday(Weekday.MON_NUMBER);
-  private static TUE = new Weekday(Weekday.TUE_NUMBER);
-  private static WED = new Weekday(Weekday.WED_NUMBER);
-  private static THU = new Weekday(Weekday.THU_NUMBER);
-  private static FRI = new Weekday(Weekday.FRI_NUMBER);
-  private static SAT = new Weekday(Weekday.SAT_NUMBER);
+const MONDAY_AS_NUMBER = 0
+const TUSEDAY_AS_NUMBER = 1
+const WEDNESDAY_AS_NUMBER = 2
+const THURSDAY_AS_NUMBER = 3
+const FRIDAY_AS_NUMBER = 4
+const SATURDAY_AS_NUMBER = 5
+const SUNDAY_AS_NUMBER = 6
 
-  static Sun() {
-    return this.SUN;
-  }
-  static Mon() {
-    return this.MON;
-  }
-  static Tue() {
-    return this.TUE;
-  }
-  static Wed() {
-    return this.WED;
-  }
-  static Thu() {
-    return this.THU;
-  }
-  static Fri() {
-    return this.FRI;
-  }
-  static Sat() {
-    return this.SAT;
-  }
-}
+type RawMonday = typeof MONDAY_AS_NUMBER;
+type RawTuesday = typeof TUSEDAY_AS_NUMBER;
+type RawWednesday = typeof WEDNESDAY_AS_NUMBER;
+type RawThursday = typeof THURSDAY_AS_NUMBER;
+type RawFriday = typeof FRIDAY_AS_NUMBER;
+type RawSaturday = typeof SATURDAY_AS_NUMBER;
+type RawSunday = typeof SUNDAY_AS_NUMBER;
+
+export type Monday = Unique<typeof BRAND, "Monday", typeof MONDAY_AS_NUMBER>;
+export type Tuesday = Unique<typeof BRAND, "Tuesday", typeof TUSEDAY_AS_NUMBER>;
+export type Wednesday = Unique<typeof BRAND, "Wednesday", typeof WEDNESDAY_AS_NUMBER>;
+export type Thursday = Unique<typeof BRAND, "Thursday", typeof THURSDAY_AS_NUMBER>;
+export type Friday = Unique<typeof BRAND, "Friday", typeof FRIDAY_AS_NUMBER>;
+export type Saturday = Unique<typeof BRAND, "Saturday", typeof SATURDAY_AS_NUMBER>;
+export type Sunday = Unique<typeof BRAND, "Sunday", typeof SUNDAY_AS_NUMBER>;
+
+export const MONDAY = MONDAY_AS_NUMBER satisfies RawMonday as Monday;
+export const TUSEDAY = TUSEDAY_AS_NUMBER satisfies RawTuesday as Tuesday;
+export const WEDNESDAY = WEDNESDAY_AS_NUMBER satisfies RawWednesday as Wednesday;
+export const THURSDAY = THURSDAY_AS_NUMBER satisfies RawThursday as Thursday;
+export const FRIDAY = FRIDAY_AS_NUMBER satisfies RawFriday as Friday;
+export const SATURDAY = SATURDAY_AS_NUMBER satisfies RawSaturday as Saturday;
+export const SUNDAY = SUNDAY_AS_NUMBER satisfies RawSunday as Sunday;
+
+export type Weekday = (
+  | Monday
+  | Tuesday
+  | Wednesday
+  | Thursday
+  | Friday
+  | Saturday
+  | Sunday
+);

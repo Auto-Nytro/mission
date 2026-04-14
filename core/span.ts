@@ -1,5 +1,6 @@
 import { Duration } from "../x.ts";
 
+export const 
 export class SpansNoLessThan {
   private lowerBound: Duration;
 

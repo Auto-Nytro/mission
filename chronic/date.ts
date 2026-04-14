@@ -1,105 +1,192 @@
-import { DateTime, Duration, Time } from "../x.ts";
+import { Duration, FAILURE, FailureCode, TextualError, Tried, Unique } from "../x.ts";
 
-export class Date {
-  private constructor(private readonly date: globalThis.Date) {}
+const BRAND = Symbol();
 
-  static now(): Date {
-    const date = new globalThis.Date();
-    date.setUTCHours(0, 0, 0, 0);
-    return new Date(date);
-  }
-  
-  getTimestamp(): number {
-    return this.date.getTime();
-  }
+export type Date = Unique<typeof BRAND, "Date", globalThis.Date>;
 
-  tillOrZero(rhs: Date): Duration {
-    const lhsTimestamp = this.date.getTime();
-    const rhsTimestamp = rhs.date.getTime();
-  
-    if (lhsTimestamp < rhsTimestamp) {
-      return Duration.fromMillisecondsOrThrow(rhsTimestamp - lhsTimestamp);
-    } else {
-      return Duration.zero();
-    }
+export const construct = (date: globalThis.Date): Date => {
+  return date as Date;
+};
+
+export const MINIMUM_TIMESTAMP = -8.64e15;
+export const MAXIMUM_TIMESTAMP = 8.64e15;
+
+export const today = (): Date => {
+  const date = new globalThis.Date();
+  date.setUTCHours(0, 0, 0, 0);
+  return construct(date);
+};
+
+export const getTimestamp = (it: Date): number => {
+  return it.getTime();
+};
+
+export const tillOrZero = (lhs: Date, rhs: Date): Duration => {
+  const lhsTimestamp = lhs.getTime();
+  const rhsTimestamp = rhs.getTime();
+
+  if (lhsTimestamp < rhsTimestamp) {
+    return Duration.fromMillisecondsOrThrow(rhsTimestamp - lhsTimestamp);
+  } else {
+    return Duration.zero();
   }
-  
-  sinceOrZero(rhs: Date): Duration {
-    const lhsTimestamp = this.date.getTime();
-    const rhsTimestamp = rhs.date.getTime();
-  
-    if (lhsTimestamp > rhsTimestamp) {
-      return Duration.fromMillisecondsOrThrow(lhsTimestamp - rhsTimestamp);
-    } else {
-      return Duration.zero();
-    }
+};
+
+export const sinceOrZero = (lhs: Date, rhs: Date): Duration => {
+  const lhsTimestamp = lhs.getTime();
+  const rhsTimestamp = rhs.getTime();
+
+  if (lhsTimestamp > rhsTimestamp) {
+    return Duration.fromMillisecondsOrThrow(lhsTimestamp - rhsTimestamp);
+  } else {
+    return Duration.zero();
   }
-  
-  
-  // JS Date supports roughly ±8.64e15 ms
-  private static readonly MIN_TIMESTAMP = -8.64e15;
-  private static readonly MAX_TIMESTAMP = 8.64e15;
-  
-  static fromTimestamp(timestamp: number): Date | Error {
-    if (!Number.isInteger(timestamp)) {
-      return new Error(`Creating Date from timestamp: Timestamp is not integer. Timestamp: ${timestamp}`);
-    }
-  
-    if (timestamp < Date.MIN_TIMESTAMP) {
-      return new Error(`Creating Date from timestamp: Timestamp is less than the minimum value. Timestamp: ${timestamp}. Minimum value: ${Date.MIN_TIMESTAMP}`)
-    }
-    
-    if (timestamp > Date.MAX_TIMESTAMP) {
-      return new Error(`Creating Date from timestamp: Timestamp is greater than the maximum value. Timestamp: ${timestamp}. Maximum value: ${Date.MAX_TIMESTAMP}`)
-    }
-  
-    const date = new globalThis.Date(timestamp);
-  
-    if (Number.isNaN(date.getTime())) {
-      return new Error(`Creating Date from timestamp: Timestamp didn't produce a valid Date for some reason 😭. Timestamp: ${timestamp}`);
-    }
-    if (
-      date.getUTCHours() !== 0
-      ||
-      date.getUTCMinutes() !== 0
-      ||
-      date.getUTCSeconds() !== 0
-      ||
-      date.getUTCMilliseconds() !== 0
-    ) {
-      // TODO: Add an error message
-      return new Error("");
-    }
-  
-    return new Date(date);
-  }
-  
-  toString(): string {
-    return this.date.toISOString();
-  }
-  
-  getDayStart() {
-    const clone = new globalThis.Date(this.date);
-    clone.setUTCHours(24, 0, 0, 0);
-    return new Date(clone);
+};
+
+export const fromTimestamp = (timestamp: number): Tried<Date, TextualError> => {
+  if (!Number.isInteger(timestamp)) {
+    const it = TextualError.create("Creating a Date from a millisecond timestamp since the unix epoch");
+    TextualError.addMessage(it, "Argument 'timestamp' is not an integer");
+    TextualError.addNumberAttachment(it, "Argument 'timestamp'", timestamp);
+    return Tried.Failure(it);
   }
 
-  getDurationTillMidnight() {
-    const clone = new globalThis.Date(this.date);
-    clone.setUTCHours(24, 0, 0, 0);
-
-    const fromTimestamp = this.date.getTime();
-    const tillTimestamp = clone.getTime();
-    const difference = tillTimestamp - fromTimestamp;
-
-    return Duration.fromMillisecondsOrThrow(difference);
+  if (timestamp < MINIMUM_TIMESTAMP) {
+    const it = TextualError.create("Creating a Date from a millisecond timestamp since the unix epoch");
+    TextualError.addMessage(it, "Argument 'timestamp' is less than the minimum value");
+    TextualError.addNumberAttachment(it, "Argument 'timestamp'", timestamp);
+    TextualError.addNumberAttachment(it, "Minimum value", MINIMUM_TIMESTAMP);
+    return Tried.Failure(it);
+  }
+  
+  if (timestamp > MAXIMUM_TIMESTAMP) {
+    const it = TextualError.create("Creating a Date from a millisecond timestamp since the unix epoch");
+    TextualError.addMessage(it, "Argument 'timestamp' is greater than the minimum value");
+    TextualError.addNumberAttachment(it, "Argument 'timestamp'", timestamp);
+    TextualError.addNumberAttachment(it, "Maximum value", MAXIMUM_TIMESTAMP);
+    return Tried.Failure(it);
   }
 
-  withTime(time: Time): DateTime {
-    throw ""
+  const date = new globalThis.Date(timestamp);
+
+  if (Number.isNaN(date.getTime())) {
+    const it = TextualError.create("Creating a Date from a millisecond timestamp since the unix epoch");
+    TextualError.addMessage(it, "Argument 'timestamp' is valid, but failed to produce a valid JavaScript Date");
+    TextualError.addNumberAttachment(it, "Argument 'timestamp'", timestamp);
+    return Tried.Failure(it);
   }
 
-  plusOrMax(duration: Duration): Date {
-    throw "";
+  if (
+    date.getUTCHours() !== 0
+    ||
+    date.getUTCMinutes() !== 0
+    ||
+    date.getUTCSeconds() !== 0
+    ||
+    date.getUTCMilliseconds() !== 0
+  ) {
+    const it = TextualError.create("Creating a Date from a millisecond timestamp since the unix epoch");
+    TextualError.addMessage(it, "Argument 'timestamp' is valid, but produced a JavaScript Date with a non-zero time");
+    TextualError.addNumberAttachment(it, "Argument 'timestamp'", timestamp);
+    TextualError.addStringAttachment(it, "JavaScript Date", date.toISOString());
+    return Tried.Failure(it);
   }
-}
+
+  return Tried.Success(construct(date));
+};
+
+export const fromTimestampOrError = (
+  timestamp: number,
+  textualError: TextualError,
+): Date | FailureCode => {
+  if (!Number.isInteger(timestamp)) {
+    TextualError.changeContext(textualError, "Creating a Date from a millisecond timestamp since the unix epoch");
+    TextualError.addMessage(textualError, "Argument 'timestamp' is not an integer");
+    TextualError.addNumberAttachment(textualError, "Argument 'timestamp'", timestamp);
+    return FAILURE;
+  }
+
+  if (timestamp < MINIMUM_TIMESTAMP) {
+    TextualError.changeContext(textualError, "Creating a Date from a millisecond timestamp since the unix epoch");
+    TextualError.addMessage(textualError, "Argument 'timestamp' is less than the minimum value");
+    TextualError.addNumberAttachment(textualError, "Argument 'timestamp'", timestamp);
+    TextualError.addNumberAttachment(textualError, "Minimum value", MINIMUM_TIMESTAMP);
+    return FAILURE;
+  }
+  
+  if (timestamp > MAXIMUM_TIMESTAMP) {
+    TextualError.changeContext(textualError, "Creating a Date from a millisecond timestamp since the unix epoch");
+    TextualError.addMessage(textualError, "Argument 'timestamp' is greater than the minimum value");
+    TextualError.addNumberAttachment(textualError, "Argument 'timestamp'", timestamp);
+    TextualError.addNumberAttachment(textualError, "Maximum value", MAXIMUM_TIMESTAMP);
+    return FAILURE;
+  }
+
+  const date = new globalThis.Date(timestamp);
+
+  if (Number.isNaN(date.getTime())) {
+    TextualError.changeContext(textualError, "Creating a Date from a millisecond timestamp since the unix epoch");
+    TextualError.addMessage(textualError, "Argument 'timestamp' is valid, but failed to produce a valid JavaScript Date");
+    TextualError.addNumberAttachment(textualError, "Argument 'timestamp'", timestamp);
+    return FAILURE;
+  }
+
+  if (
+    date.getUTCHours() !== 0
+    ||
+    date.getUTCMinutes() !== 0
+    ||
+    date.getUTCSeconds() !== 0
+    ||
+    date.getUTCMilliseconds() !== 0
+  ) {
+    TextualError.changeContext(textualError, "Creating a Date from a millisecond timestamp since the unix epoch");
+    TextualError.addMessage(textualError, "Argument 'timestamp' is valid, but produced a JavaScript Date wTextualErrorh a non-zero time");
+    TextualError.addNumberAttachment(textualError, "Argument 'timestamp'", timestamp);
+    TextualError.addStringAttachment(textualError, "JavaScript Date", date.toISOString());
+    return FAILURE;
+  }
+
+  return construct(date);
+};
+
+export const toString = (it: Date): string => {
+  return it.toISOString();
+};
+
+export const getDayStart = (it: Date): Date => {
+  const clone = new globalThis.Date(it);
+  clone.setUTCHours(24, 0, 0, 0);
+  return construct(clone);
+};
+
+export const getDurationTillMidnight = (it: Date): Duration => {
+  const clone = new globalThis.Date(it);
+  clone.setUTCHours(24, 0, 0, 0);
+
+  const fromTimestamp = it.getTime();
+  const tillTimestamp = clone.getTime();
+  const difference = tillTimestamp - fromTimestamp;
+
+  return Duration.fromMillisecondsOrThrow(difference);
+};
+
+export const isLaterThan = (it: Date, rhs: Date): boolean => {
+  return getTimestamp(it) > getTimestamp(rhs);
+};
+
+export const Date = {
+  MINIMUM_TIMESTAMP,
+  MAXIMUM_TIMESTAMP,
+  construct,
+  today,
+  getTimestamp,
+  tillOrZero,
+  sinceOrZero,
+  fromTimestamp,
+  fromTimestampOrError,
+  toString,
+  getDayStart,
+  getDurationTillMidnight,
+  isLaterThan,
+};
