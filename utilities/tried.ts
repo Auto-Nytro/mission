@@ -109,7 +109,7 @@ export const Tried = {
     return me.error;
   },
 
-  unwrap: <Value, Error>(it: Tried<Value, Error>): Value => {
+  experimental_unwrap: <Value, Error>(it: Tried<Value, Error>): Value => {
     if (Tried.isSuccess(it)) {
       return Tried.value(it);
     } else {

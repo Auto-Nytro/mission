@@ -113,7 +113,7 @@ const getJsDate = (it: DateTime): globalThis.Date => {
 export const getTime = (it: DateTime): Time => {
   const hour = getJsDate(it).getUTCHours();
   const minute = getJsDate(it).getUTCMinutes();
-  return Tried.unwrap(Time.fromHourAndMinute(hour, minute));
+  return Tried.experimental_unwrap(Time.fromHourAndMinute(hour, minute));
 };
 
 export const toTimestamp = (it: DateTime): number => {
@@ -229,7 +229,7 @@ export const DateTime = {
   isEarilerThanOrAt,
   isLaterThan,
   isLaterThanOrAt,
-  plusOrMax,
+  saturatingAdd: plusOrMax,
   toString2,
   isEarilerThanBy,
   isEarilerThanByOrLess,

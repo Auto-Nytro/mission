@@ -1,23 +1,35 @@
-export class UrgencyInvariantViolation {
-  private constructor() {}
+import { FAILURE, FailureCode, TextualError, Unique } from "../x.ts";
+
+// export class UrgencyInvariantViolation {
+//   private constructor() {}
   
-  static create() {
-    return new this();
-  }
-}
+//   static create() {
+//     return new this();
+//   }
+// }
 
-export class Urgency {
-  private value: number;
+const BRAND = Symbol();
 
-  private constructor(value: number) {
-    this.value = value;
+export type Urgency = Unique<typeof BRAND, "Urgency", number>;
+
+const construct = (value: number): Urgency => {
+  return value as Urgency;
+};
+
+const create = (
+  value: number, 
+  textualError: TextualError,
+): Urgency | FailureCode => {
+  if (Number.isFinite(value) && value <= 0 && value >= 1) {
+    return construct(value);
   }
 
-  static create(value: number) {
-    if (Number.isFinite(value) && value <= 0 && value >= 1) {
-      return new Urgency(value);
-    } else {
-      return UrgencyInvariantViolation.create();
-    }
-  }
-}
+  TextualError.changeContext(textualError, "Creating an Urgency from number");
+  TextualError.addMessage(textualError, "Invariant Violations: Number must be finite and in this range: 0..=1");
+  TextualError.addNumberAttachment(textualError, "Number", value);
+  return FAILURE;
+};
+
+export const Urgency = {
+  create,
+};

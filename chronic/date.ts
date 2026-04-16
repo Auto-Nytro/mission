@@ -1,4 +1,4 @@
-import { Duration, FAILURE, FailureCode, TextualError, Tried, Unique } from "../x.ts";
+import { Duration, DateTime, FAILURE, FailureCode, TextualError, Time, Tried, Unique } from "../x.ts";
 
 const BRAND = Symbol();
 
@@ -175,6 +175,14 @@ export const isLaterThan = (it: Date, rhs: Date): boolean => {
   return getTimestamp(it) > getTimestamp(rhs);
 };
 
+const withTime = (it: Date, time: Time): DateTime => {
+  // TODO: Implement
+};
+
+const saturatingAddOneDay = (it: Date): Date => {
+
+};
+
 export const Date = {
   MINIMUM_TIMESTAMP,
   MAXIMUM_TIMESTAMP,
@@ -189,4 +197,6 @@ export const Date = {
   getDayStart,
   getDurationTillMidnight,
   isLaterThan,
+  withTime,
+  saturatingAddOneDay,
 };

@@ -1,11 +1,5 @@
-import { DateTime, TaskStatus } from "../x.ts";
-
-export const enum TaskDueVariant {
-  DueAnyTime,
-  DueBeforeTime,
-  DueAfterTime,
-  DueInTimeRange,
-}
+import { TaskDueAfterTime, TaskDueAnyTime, TaskDueBeforeTime, TaskDueInTimeRange, TaskState } from "../x.ts";
+import { TaskDueVariant } from "./task_due_variant.ts";
 
 export type TaskDue = (
   | TaskDueAnyTime
@@ -14,109 +8,29 @@ export type TaskDue = (
   | TaskDueInTimeRange
 );
 
-export type TaskDueAnyTime = {
-  readonly variant: TaskDueVariant.DueAnyTime,
-};
-
-export const TaskDueAnyTime = {
-  create: (): TaskDueAnyTime => {
-    return {
-      variant: TaskDueVariant.DueAnyTime,
-    };
-  },
-
-  calculateTaskStatus: (it: TaskDueAnyTime) => {
-    return TaskStatus.Due;
-  },
-};
-
-export type TaskDueBeforeTime = {
-  readonly variant: TaskDueVariant.DueBeforeTime,
-  readonly time: DateTime,
-};
-
-export const TaskDueBeforeTime = {
-  create: (time: DateTime): TaskDueBeforeTime => {
-    return {
-      time,
-      variant: TaskDueVariant.DueBeforeTime,
-    };
-  },
-
-  getTime: (it: TaskDueBeforeTime): DateTime => {
-    return it.time;
-  },
-
-  calculateTaskStatus: (it: TaskDueBeforeTime, now: DateTime) => {
-    if (DateTime.isEarilerThan(now, it.time)) {
-      return TaskStatus.Due;
+const match = <R1, R2, R3, R4>(
+  it: TaskDue,
+  onBeforeTime: (it: TaskDueBeforeTime) => R1,
+  onAfterTime: (it: TaskDueAfterTime) => R2,
+  onInTimeRagne: (it: TaskDueInTimeRange) => R3,
+  onAnyTime: (it: TaskDueAnyTime) => R4,
+): R1 | R2 | R3 | R4 => {
+  switch (it.variant) {
+    case TaskDueVariant.DueAnyTime: {
+      return onAnyTime(it);
     }
-    return TaskStatus.Pending;
-  },
-}
-
-export type TaskDueAfterTime = {
-  readonly variant: TaskDueVariant.DueAfterTime,
-  readonly time: DateTime,
-};
-
-export const TaskDueAfterTime = {
-  create: (time: DateTime): TaskDueAfterTime => {
-    return {
-      variant: TaskDueVariant.DueAfterTime,
-      time,
-    };
-  },
-  
-  getTime: (it: TaskDueAfterTime): DateTime => {
-    return it.time;
-  },
-
-  calculateTaskStatus: (it: TaskDueAfterTime, now: DateTime) => {
-    if (DateTime.isLaterThan(it.time, now)) {
-      return TaskStatus.Due;
+    case TaskDueVariant.DueBeforeTime: {
+      return onBeforeTime(it);
     }
-    return TaskStatus.Pending;
+    case TaskDueVariant.DueAfterTime: {
+      return onAfterTime(it);
+    }
+    case TaskDueVariant.DueInTimeRange: {
+      return onInTimeRagne(it);
+    }
   }
+};
+
+export const TaskDue = {
+  match,
 }
-
-export type TaskDueInTimeRange = {
-  readonly variant: TaskDueVariant.DueInTimeRange,
-  from: DateTime,
-  till: DateTime,
-};
-
-export const TaskDueInTimeRange = {
-  construct: (from: DateTime, till: DateTime): TaskDueInTimeRange => {
-    return {
-      variant: TaskDueVariant.DueInTimeRange,
-      from,
-      till,
-    };
-  },
-
-  create: (from: DateTime, till: DateTime): TaskDueInTimeRange => {
-    return {
-      variant: TaskDueVariant.DueInTimeRange,
-      from,
-      till,
-    };
-  },
-  
-  getFrom: (it: TaskDueInTimeRange): DateTime => {
-    return it.from;
-  },
-  
-  getTill: (it: TaskDueInTimeRange): DateTime => {
-    return it.till;
-  },
-
-  calculateTaskStatus: (it: TaskDueInTimeRange, now: DateTime) => {
-    if (DateTime.isEarilerThan(now, it.from)) {
-      return TaskStatus.Pending;
-    }
-    if (DateTime.isLaterThan(now, it.till)) {
-      return null;
-    }
-  },
-};

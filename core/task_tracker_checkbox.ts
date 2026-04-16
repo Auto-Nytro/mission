@@ -1,6 +1,7 @@
-import { DateTime, Difficulty, Nullable, Span } from "../x.ts";
+import { DateTime, Difficulty, Nullable, Span, TaskTrackerVariant } from "../x.ts";
 
 export interface TaskTrackerCheckbox {
+  readonly variant: TaskTrackerVariant.Checkbox,
   span: Span,
   difficulty: Difficulty,
   completedAt: Nullable<DateTime>,
@@ -10,12 +11,17 @@ export interface TaskTrackerCheckboxComplete extends TaskTrackerCheckbox {
   completedAt: DateTime,
 };
 
+export interface TaskTrackerCheckboxIncomplete extends TaskTrackerCheckbox {
+  completedAt: null,
+};
+
 const construct = (
   span: Span,
   difficulty: Difficulty,
-  completedAt: DateTime | null,
+  completedAt: Nullable<DateTime>,
 ): TaskTrackerCheckbox => {
   return {
+    variant: TaskTrackerVariant.Checkbox,
     span,
     difficulty,
     completedAt,
@@ -43,8 +49,12 @@ const doOrNoop = (it: TaskTrackerCheckbox, time: DateTime) => {
   }
 };
 
-const undoOrNoop = (it: TaskTrackerCheckbox) => {
+const undoOrNoop = (it: TaskTrackerCheckbox): void => {
   it.completedAt = null;
+};
+
+const getCompletedAt = (it: TaskTrackerCheckbox): Nullable<DateTime> => {
+  return it.completedAt;
 };
 
 export const TaskTrackerCheckbox = {
@@ -53,4 +63,5 @@ export const TaskTrackerCheckbox = {
   isComplete,
   doOrNoop,
   undoOrNoop,
+  getCompletedAt,
 };

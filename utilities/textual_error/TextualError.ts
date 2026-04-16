@@ -104,6 +104,9 @@ export const addPrimitiveAttachment = (
 
 export const print = (it: TextualError) => ""
 export const prettyPrint = (it: TextualError) => ""
+const toError = (it: TextualError) => {
+  return new Error(prettyPrint(it))
+}
 
 export const TextualError = {
   create,
@@ -119,4 +122,5 @@ export const TextualError = {
   addUnknownAttachment,
   print,
   prettyPrint,
+  toJsError: toError,
 };

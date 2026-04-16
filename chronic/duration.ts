@@ -4,24 +4,26 @@ const BRAND = Symbol();
 
 export type Duration = Unique<typeof BRAND, "Duration", number>;
 
-export const construct = (milliseconds: number): Duration => {
+const construct = (milliseconds: number): Duration => {
   return milliseconds as Duration;
 };
 
-export const MAXIMUM_MILLISECONDS = Number.MAX_SAFE_INTEGER;
-export const MAXIMUM_SECONDS = Math.floor(MAXIMUM_MILLISECONDS / 1000);
-export const MAXIMUM_MINUTES = Math.floor(MAXIMUM_SECONDS / 60);
-export const MAXIMUM_HOURS = Math.floor(MAXIMUM_MINUTES / 60);
-export const MAXIMUM_DAYS = Math.floor(MAXIMUM_HOURS / 24);
-export const MAXIMUM_WEEKS = Math.floor(MAXIMUM_DAYS / 7);
+const MAXIMUM_MILLISECONDS = Number.MAX_SAFE_INTEGER;
+const MAXIMUM_SECONDS = Math.floor(MAXIMUM_MILLISECONDS / 1000);
+const MAXIMUM_MINUTES = Math.floor(MAXIMUM_SECONDS / 60);
+const MAXIMUM_HOURS = Math.floor(MAXIMUM_MINUTES / 60);
+const MAXIMUM_DAYS = Math.floor(MAXIMUM_HOURS / 24);
+const MAXIMUM_WEEKS = Math.floor(MAXIMUM_DAYS / 7);
 
-export const MILLISECONDS_PER_SECOND = 1000;
-export const MILLISECONDS_PER_MINUTE = MILLISECONDS_PER_SECOND * 60;
-export const MILLISECONDS_PER_HOUR = MILLISECONDS_PER_MINUTE * 60;
-export const MILLISECONDS_PER_DAY = MILLISECONDS_PER_HOUR * 24;
-export const MILLISECONDS_PER_WEEK = MILLISECONDS_PER_DAY * 7;
+const MILLISECONDS_PER_SECOND = 1000;
+const MILLISECONDS_PER_MINUTE = MILLISECONDS_PER_SECOND * 60;
+const MILLISECONDS_PER_HOUR = MILLISECONDS_PER_MINUTE * 60;
+const MILLISECONDS_PER_DAY = MILLISECONDS_PER_HOUR * 24;
+const MILLISECONDS_PER_WEEK = MILLISECONDS_PER_DAY * 7;
 
-export const fromMilliseconds = (milliseconds: number): Tried<Duration, TextualError> => {
+const DAY = construct(MILLISECONDS_PER_DAY);
+
+const fromMilliseconds = (milliseconds: number): Tried<Duration, TextualError> => {
   if (!Number.isInteger(milliseconds)) {
     const it = TextualError.create("Creating a Duration from milliseconds");
     TextualError.addMessage(it, "Argument 'milliseconds' is not an integer")
@@ -47,7 +49,7 @@ export const fromMilliseconds = (milliseconds: number): Tried<Duration, TextualE
   return Tried.Success(construct(milliseconds));
 };
 
-export const fromMillisecondsOrErrorCode = (
+const fromMillisecondsOrErrorCode = (
   milliseconds: number,
   textualError: TextualError,
 ): Duration | FailureCode => {
@@ -76,7 +78,7 @@ export const fromMillisecondsOrErrorCode = (
   return construct(milliseconds);
 };
 
-export const fromSeconds = (seconds: number): Tried<Duration, TextualError> => {
+const fromSeconds = (seconds: number): Tried<Duration, TextualError> => {
   if (!Number.isInteger(seconds)) {
     const it = TextualError.create("Creating a Duration from seconds");
     TextualError.addMessage(it, "Argument 'seconds' is not an integer")
@@ -102,7 +104,7 @@ export const fromSeconds = (seconds: number): Tried<Duration, TextualError> => {
   return Tried.Success(construct(seconds * MILLISECONDS_PER_SECOND));
 };
 
-export const fromMinutes = (minutes: number): Tried<Duration, TextualError> => {
+const fromMinutes = (minutes: number): Tried<Duration, TextualError> => {
   if (!Number.isInteger(minutes)) {
     const it = TextualError.create("Creating a Duration from minutes");
     TextualError.addMessage(it, "Argument 'minutes' is not an integer")
@@ -128,7 +130,7 @@ export const fromMinutes = (minutes: number): Tried<Duration, TextualError> => {
   return Tried.Success(construct(minutes * MILLISECONDS_PER_MINUTE));
 };
 
-export const fromHours = (hours: number): Tried<Duration, TextualError> => {
+const fromHours = (hours: number): Tried<Duration, TextualError> => {
   if (!Number.isInteger(hours)) {
     const it = TextualError.create("Creating a Duration from hours");
     TextualError.addMessage(it, "Argument 'hours' is not an integer")
@@ -154,7 +156,7 @@ export const fromHours = (hours: number): Tried<Duration, TextualError> => {
   return Tried.Success(construct(hours * MILLISECONDS_PER_HOUR));
 };
 
-export const fromDays = (days: number): Tried<Duration, TextualError> => {
+const fromDays = (days: number): Tried<Duration, TextualError> => {
   if (!Number.isInteger(days)) {
     const it = TextualError.create("Creating a Duration from days");
     TextualError.addMessage(it, "Argument 'days' is not an integer")
@@ -180,7 +182,7 @@ export const fromDays = (days: number): Tried<Duration, TextualError> => {
   return Tried.Success(construct(days * MILLISECONDS_PER_DAY));
 };
 
-export const fromWeeks = (weeks: number): Tried<Duration, TextualError> => {
+const fromWeeks = (weeks: number): Tried<Duration, TextualError> => {
   if (!Number.isInteger(weeks)) {
     const it = TextualError.create("Creating a Duration from weeks");
     TextualError.addMessage(it, "Argument 'weeks' is not an integer")
@@ -206,7 +208,7 @@ export const fromWeeks = (weeks: number): Tried<Duration, TextualError> => {
   return Tried.Success(construct(weeks * MILLISECONDS_PER_WEEK));
 };
 
-export const fromMillisecondsOrThrow = (millseconds: number): Duration => {
+const fromMillisecondsOrThrow = (millseconds: number): Duration => {
   const it = fromMilliseconds(millseconds);
   if (Tried.isSuccess(it)) {
     return Tried.value(it);
@@ -215,23 +217,23 @@ export const fromMillisecondsOrThrow = (millseconds: number): Duration => {
   }
 };
 
-export const zero = (): Duration => {
+const zero = (): Duration => {
   return construct(0);
 };
 
-export const isZero = (it: Duration): boolean => {
+const isZero = (it: Duration): boolean => {
   return toTotalMilliseconds(it) === 0;
 };
 
-export const toTotalMilliseconds = (it: Duration): number => {
+const toTotalMilliseconds = (it: Duration): number => {
   return it;
 };
 
-export const toTotaMinutes = (it: Duration): number => {
+const toTotaMinutes = (it: Duration): number => {
   return Math.floor(toTotalMilliseconds(it) / MILLISECONDS_PER_MINUTE);
 };
 
-export const minusOrZero = (it: Duration, rhs: Duration): Duration => {
+const minusOrZero = (it: Duration, rhs: Duration): Duration => {
   if (toTotalMilliseconds(it) > toTotalMilliseconds(rhs)) {
     return construct(toTotalMilliseconds(it) - toTotalMilliseconds(rhs));
   } else {
@@ -239,7 +241,7 @@ export const minusOrZero = (it: Duration, rhs: Duration): Duration => {
   }
 };
 
-export const plusOrMax = (it: Duration, rhs: Duration): Duration => {
+const plusOrMax = (it: Duration, rhs: Duration): Duration => {
   const result = toTotalMilliseconds(it) + toTotalMilliseconds(rhs);
   if (result <= MAXIMUM_MILLISECONDS) {
     return construct(result);
@@ -248,35 +250,35 @@ export const plusOrMax = (it: Duration, rhs: Duration): Duration => {
   }
 };
 
-export const isEqualTo = (lhs: Duration, rhs: Duration): boolean => {
+const isEqualTo = (lhs: Duration, rhs: Duration): boolean => {
   return toTotalMilliseconds(lhs) === toTotalMilliseconds(rhs);
 };
 
-export const isLongerThan = (it: Duration, rhs: Duration): boolean => {
+const isLongerThan = (it: Duration, rhs: Duration): boolean => {
   return toTotalMilliseconds(it) > toTotalMilliseconds(rhs);
 };
 
-export const isLongerThanOrEqualTo = (it: Duration, rhs: Duration): boolean => {
+const isLongerThanOrEqualTo = (it: Duration, rhs: Duration): boolean => {
   return toTotalMilliseconds(it) >= toTotalMilliseconds(rhs);
 };
 
-export const isShorterThan = (it: Duration, rhs: Duration): boolean => {
+const isShorterThan = (it: Duration, rhs: Duration): boolean => {
   return toTotalMilliseconds(it) < toTotalMilliseconds(rhs);
 };
 
-export const isShorterThanOrEqualTo = (it: Duration, rhs: Duration): boolean => {
+const isShorterThanOrEqualTo = (it: Duration, rhs: Duration): boolean => {
   return toTotalMilliseconds(it) <= toTotalMilliseconds(rhs);
 };
 
-export const min = (lhs: Duration, rhs: Duration): Duration => {
+const min = (lhs: Duration, rhs: Duration): Duration => {
   return isShorterThan(lhs, rhs) ? lhs : rhs;
 };
 
-export const max = (lhs: Duration, rhs: Duration): Duration => {
+const max = (lhs: Duration, rhs: Duration): Duration => {
   return isLongerThan(lhs, rhs) ? lhs : rhs;
 };
 
-export const toString = (it: Duration): string => {
+const toString = (it: Duration): string => {
   const parts: string[] = [];
 
   let totalMilliseconds = toTotalMilliseconds(it);
@@ -296,7 +298,7 @@ export const toString = (it: Duration): string => {
   return parts.join(' ');
 };
 
-export const toString2 = (it: Duration): string => {
+const toString2 = (it: Duration): string => {
   const milliseconds = toTotalMilliseconds(it);
 
   if (milliseconds === 0) {
@@ -341,6 +343,7 @@ export const Duration = {
   MILLISECONDS_PER_HOUR,
   MILLISECONDS_PER_DAY,
   MILLISECONDS_PER_WEEK,
+  DAY,
   fromMilliseconds,
   fromMillisecondsOrErrorCode,
   fromMinutes,

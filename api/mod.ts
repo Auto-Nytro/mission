@@ -1,4 +1,4 @@
-import { UuidV4, Habit, Task, HabitName, HabitDescription, Repeater, HabitDue, Difficulty, Urgency } from "../x.ts"
+import { UuidV4, Routine, Task, RoutineName, RoutineDescription, Repeater, RoutineDue, Difficulty, Urgency } from "../x.ts"
 
 class SuccessCode {} 
 
@@ -13,9 +13,9 @@ export interface Database extends DatabaseOperations {
 }
 
 export interface DatabaseOperations {
-  addHabit(habitId: UuidV4, habit: Habit): Promise<SuccessCode | DatabaseError>;
-  setHabitName(habitId: UuidV4, newHabitName: string): Promise<SuccessCode | DatabaseError>;
-  setHabitDescription(habitId: UuidV4, newHabitDescription: string): Promise<SuccessCode | DatabaseError>;
+  addRoutine(habitId: UuidV4, habit: Routine): Promise<SuccessCode | DatabaseError>;
+  setRoutineName(habitId: UuidV4, newRoutineName: string): Promise<SuccessCode | DatabaseError>;
+  setRoutineDescription(habitId: UuidV4, newRoutineDescription: string): Promise<SuccessCode | DatabaseError>;
   addTask(habitId: UuidV4, taskId: UuidV4, task: Task): Promise<SuccessCode | DatabaseError>;
 }
 
@@ -28,16 +28,16 @@ export class Api {
     this.database = database;
   }
 
-  async createHabit(
+  async createRoutine(
     habitId: UuidV4,
-    habitName: HabitName,
-    habitDescription: HabitDescription,
-    habitDue: HabitDue,
+    habitName: RoutineName,
+    habitDescription: RoutineDescription,
+    habitDue: RoutineDue,
     habitRepeater: Repeater,
     difficulty: Difficulty,
     urgency: Urgency,
   ) {
-    const habit = Habit.create(
+    const habit = Routine.create(
       habitName,
       habitDescription,
       habitDue,
@@ -46,7 +46,7 @@ export class Api {
       urgency,
     );
 
-    const error = await this.database.addHabit(habitId, habit);
+    const error = await this.database.addRoutine(habitId, habit);
     if (error instanceof DatabaseError) {
       return error;
     }
@@ -54,8 +54,8 @@ export class Api {
     return habit;
   }
 
-  setHabitName(habitId: UuidV4, newHabitName: string) {}
-  setHabitDescription() {}
+  setRoutineName(habitId: UuidV4, newRoutineName: string) {}
+  setRoutineDescription() {}
 }
 
 

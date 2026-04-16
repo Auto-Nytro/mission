@@ -101,11 +101,11 @@ export const contains = (it: TimeRange, time: Time): boolean => {
 };
 
 export const getFrom = (it: TimeRange): Time => {
-  return Tried.unwrap(Time.fromTimestamp(it.from));
+  return Tried.experimental_unwrap(Time.fromTimestamp(it.from));
 };
 
 export const getTill = (it: TimeRange): Time => {
-  return Tried.unwrap(
+  return Tried.experimental_unwrap(
     Time.fromTimestamp(
       it.till <= MAXIMUM_FROM_TIMESTAMP 
         ? it.till

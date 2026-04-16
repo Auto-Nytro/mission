@@ -1,4 +1,4 @@
-import { DateTime, Duration, FAILURE, FailureCode, TextualError } from "../x.ts";
+import { DateTime, Duration, FAILURE, FailureCode, Integer, Nullable, TaskTrackerVariant, TextualError } from "../x.ts";
 
 export const enum TaskTrackerStopwatchStatusVariant {
   Ready,
@@ -6,6 +6,17 @@ export const enum TaskTrackerStopwatchStatusVariant {
   Paused,
   Completed,
 }
+
+export const TaskTrackerStopwatchStatusVariantM = {
+  toNumber: (it: TaskTrackerStopwatchStatusVariant): Integer => {
+
+  },
+
+  /**
+   * @throws {TextualError}
+   */
+  fromIntegerOrThrow: (integer: Integer): TaskTrackerStopwatchStatusVariant => {},
+};
 
 export type TaskTrackerStopwatchStatus = (
   | TaskTrackerStopwatchStatusReady
@@ -33,7 +44,33 @@ export type TaskTrackerStopwatchStatusCompleted = {
   readonly at: DateTime,
 };
 
+export const TaskTrackerStopwatchStatus = {
+  match: <R1, R2, R3, R4>(
+    it: TaskTrackerStopwatchStatus,
+    onReady: (it: TaskTrackerStopwatchStatusReady) => R1,
+    onRunning: (it: TaskTrackerStopwatchStatusRunning) => R2,
+    onPaused: (it: TaskTrackerStopwatchStatusPaused) => R3,
+    onCompleted: (it: TaskTrackerStopwatchStatusCompleted) => R4,
+  ): R1 | R2 | R3 | R4 => {
+    switch (it.variant) {
+      case TaskTrackerStopwatchStatusVariant.Ready: {
+        return onReady(it);
+      }
+      case TaskTrackerStopwatchStatusVariant.Running: {
+        return onRunning(it);
+      }
+      case TaskTrackerStopwatchStatusVariant.Paused: {
+        return onPaused(it);
+      }
+      case TaskTrackerStopwatchStatusVariant.Completed: {
+        return onCompleted(it);
+      }
+    }
+  },
+};
+
 export interface TaskTrackerStopwatch {
+  readonly variant: TaskTrackerVariant.Stopwatch,
   workload: Duration;
   workdone: Duration;
   status: TaskTrackerStopwatchStatus;
@@ -58,6 +95,7 @@ const construct = (
   status: TaskTrackerStopwatchStatus,
 ): TaskTrackerStopwatch => {
   return {
+    variant: TaskTrackerVariant.Stopwatch,
     workload,
     workdone,
     status,
@@ -117,6 +155,7 @@ const toRunning = (
   time: DateTime,
 ): TaskTrackerStopwatchRunning => {
   return {
+    variant: it.variant,
     workload: it.workload,
     workdone: it.workdone,
     status: {
@@ -131,6 +170,7 @@ const toPaused = (
   time: DateTime,
 ): TaskTrackerStopwatchRunning => {
   return {
+    variant: it.variant,
     workload: it.workload,
     workdone: Duration.saturatingAdd(
       it.workdone, 
@@ -148,6 +188,7 @@ const toResumed = (
   time: DateTime,
 ): TaskTrackerStopwatchRunning => {
   return {
+    variant: it.variant,
     workload: it.workload,
     workdone: it.workdone,
     status: {
@@ -157,6 +198,63 @@ const toResumed = (
   };
 };
 
+const startOrNoop = (
+  it: TaskTrackerStopwatch,
+  time: DateTime,
+) => {
+  if (!isRunning(it)) {
+    return;
+  }
+  
+  it.status = {
+    variant: TaskTrackerStopwatchStatusVariant.Running,
+    at: time,
+  };
+};
+
+const pauseOrNoop = (
+  it: TaskTrackerStopwatch,
+  time: DateTime,
+) => {
+  if (it.status.variant !== TaskTrackerStopwatchStatusVariant.Running) {
+    return;
+  }
+
+  it.workdone = Duration.saturatingAdd(
+    it.workdone, 
+    DateTime.tillOrZero(it.status.at, time),
+  );
+
+  it.status = {
+    variant: TaskTrackerStopwatchStatusVariant.Paused,
+    at: time,
+  };
+};
+
+const resumeOrNoop = (
+  it: TaskTrackerStopwatch,
+  time: DateTime,
+) => {
+  it.status = {
+    variant: TaskTrackerStopwatchStatusVariant.Running,
+    at: time,
+  };
+};
+
+const getWorkload = (it: TaskTrackerStopwatch): Duration => {
+  return it.workload;
+};
+const getWorkdone = (it: TaskTrackerStopwatch): Duration => {
+  return it.workdone;
+};
+const getStatus = (it: TaskTrackerStopwatch): TaskTrackerStopwatchStatus => {
+  return it.status;
+};
+const getCompletedAt = (it: TaskTrackerStopwatch): Nullable<DateTime> => {
+  return isCompleted(it)
+    ? it.status.at
+    : null;
+};
 
 export const TaskTrackerStopwatch = {
   reconstruct,
@@ -168,4 +266,11 @@ export const TaskTrackerStopwatch = {
   isPaused,
   isReady,
   isRunning,
+  getCompletedAt,
+  pauseOrNoop,
+  resumeOrNoop,
+  startOrNoop,
+  getWorkload,
+  getWorkdone,
+  getStatus,
 };

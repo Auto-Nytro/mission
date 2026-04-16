@@ -20,6 +20,7 @@ export const CreateDifficultyError = {
 
 const BRAND = Symbol()
 
+// TODO: Rename to DifficultyScale
 export type Difficulty = Unique<typeof BRAND, "Difficulty", number>
 
 const construct = (value: number): Difficulty => {

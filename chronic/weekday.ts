@@ -1,4 +1,4 @@
-import { Unique } from "../x.ts";
+import { Integer, TextualError, Unique } from "../x.ts";
 
 const BRAND = Symbol();
 
@@ -43,3 +43,32 @@ export type Weekday = (
   | Saturday
   | Sunday
 );
+
+/**
+ * @throws {TextualError}
+ */
+const fromNumberOrThrow = (number: number): Weekday => {
+  if (
+    Number.isFinite(number)
+    &&
+    number >= MONDAY_AS_NUMBER
+    &&
+    number <= SUNDAY_AS_NUMBER
+  ) {
+    return number as Weekday;
+  }
+
+  const error = TextualError.create("Creating a Weekday from number");
+  TextualError.addMessage(error, "Number must be a integer in this range: 0..=6 where 0 is Monday and 6 is Sunday");
+  TextualError.addNumberAttachment(error, "Number", number);
+  throw TextualError.toJsError(error);
+};
+
+const toNumber = (it: Weekday): number => {
+  return it;
+};
+
+export const Weekday = {
+  toNumber,
+  fromNumberOrThrow,
+}; 
